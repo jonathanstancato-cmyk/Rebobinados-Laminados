@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rebobinados — Winflex</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:13px;background:#f5f5f3;color:#1a1a1a;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.da{display:flex;flex:1;overflow:hidden}
+.sb{width:210px;flex-shrink:0;background:#fff;border-right:1px solid #e8e8e6;display:flex;flex-direction:column}
+.sb-logo{padding:14px;border-bottom:1px solid #e8e8e6}
+.sb-logo .lg{font-size:16px;font-weight:700}
+.sb-logo .ls{font-size:11px;color:#999;margin-top:1px}
+.sb-section{font-size:10px;font-weight:700;color:#bbb;letter-spacing:.07em;padding:12px 14px 3px;text-transform:uppercase}
+.sb-item{display:flex;align-items:center;gap:8px;padding:8px 14px;cursor:pointer;font-size:12px;font-weight:500;color:#555;border:none;background:none;width:100%;text-align:left;transition:all .12s}
+.sb-item:hover{background:#f5f5f3;color:#1a1a1a}
+.sb-item.active{background:#EBF5FB;color:#1a6faf;font-weight:600}
+.sb-cnt{font-size:10px;font-weight:700;background:#f0f0ee;border-radius:99px;padding:1px 7px;margin-left:auto;color:#777}
+.sb-cnt.red{background:#fee2e2;color:#991b1b}
+.sb-cnt.green{background:#dcfce7;color:#166534}
+.sb-footer{margin-top:auto;padding:12px 14px;border-top:1px solid #e8e8e6;font-size:11px;color:#999}
+.sb-footer strong{display:block;font-size:12px;color:#1a1a1a;margin-bottom:1px}
+.main{flex:1;overflow-y:auto;padding:1.5rem}
+.page{display:none}.page.active{display:block}
+.pg-title{font-size:20px;font-weight:700;margin-bottom:2px}
+.pg-sub{font-size:12px;color:#888;margin-bottom:1rem}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:8px;border:1px solid #ddd;background:#fff;font-size:12px;font-weight:500;cursor:pointer;color:#1a1a1a;transition:background .12s}
+.btn:hover{background:#f5f5f3}
+.btn-primary{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.btn-primary:hover{background:#333}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-danger{color:#991b1b;border-color:#fca5a5}
+.btn-danger:hover{background:#fef2f2}
+.btn-green{background:#166534;color:#fff;border-color:#166534}
+.btn-green:hover{background:#14532d}
+.top-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px}
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.25rem}
+.stat{background:#fff;border:1px solid #e8e8e6;border-radius:10px;padding:12px 14px}
+.stat .sl{font-size:11px;color:#888;margin-bottom:4px}
+.stat .sv{font-size:20px;font-weight:700}
+.stat .ss{font-size:11px;color:#aaa;margin-top:2px}
+/* BADGES */
+.badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap;display:inline-block}
+.b-pend{background:#F9A825;color:#4a3000}
+.b-prod{background:#1E88E5;color:#fff}
+.b-fin{background:#dcfce7;color:#166534}
+.b-pet{background:#dbeafe;color:#1e40af}
+.b-pe{background:#dcfce7;color:#166534}
+/* ORDEN CARD */
+.orden-card{border:1.5px solid #e8e8e6;border-radius:10px;margin-bottom:10px;overflow:hidden}
+.orden-card.pendiente{background:#FFFDE7;border-color:#F9A825}
+.orden-card.en-produccion{background:#E3F2FD;border-color:#1E88E5}
+.orden-head{display:flex;align-items:center;padding:12px 14px;gap:10px;cursor:pointer;flex-wrap:wrap}
+.orden-head:hover{filter:brightness(.97)}
+.o-nro{font-size:11px;font-weight:700;color:#aaa;font-family:monospace;min-width:55px}
+.o-main{flex:1;min-width:120px}
+.o-prod{font-size:13px;font-weight:700}
+.o-sub{font-size:11px;color:#888;margin-top:3px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.o-tag{font-size:10px;font-weight:600;padding:1px 6px;border-radius:99px;background:#f0f0ee;color:#555}
+.chevron{font-size:18px;color:#ccc;transition:transform .15s;user-select:none}
+.chevron.open{transform:rotate(180deg)}
+/* PROGRESS */
+.prog-wrap{margin:0 14px 4px}
+.prog-label{display:flex;justify-content:space-between;font-size:11px;color:#888;margin-bottom:4px}
+.prog-bar{width:100%;height:8px;background:#f0f0ee;border-radius:99px;overflow:hidden}
+.prog-fill{height:100%;border-radius:99px;background:#1E88E5;transition:width .3s}
+.prog-fill.done{background:#166534}
+/* FALTANTE */
+.faltante-box{margin:6px 14px 10px;background:#fff;border:1px solid #e8e8e6;border-radius:8px;padding:8px 12px}
+.faltante-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.faltante-blk{font-size:11px}
+.faltante-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+.faltante-title.pet{color:#1e40af}
+.faltante-title.pe{color:#166534}
+.frow{display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid #f5f5f3;font-size:11px}
+.frow:last-child{border-bottom:none}
+.fk{color:#888}.fv{font-weight:600}
+.completado-msg{font-size:11px;color:#166534;font-weight:600;text-align:center;padding:4px}
+/* BODY */
+.orden-body{display:none;border-top:1px solid #f0f0ee;padding:14px}
+.orden-body.open{display:block}
+/* SPECS */
+.specs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.spec-block{background:#fff;border:1px solid #e8e8e6;border-radius:8px;padding:10px 12px}
+.spec-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+.spec-title.fin{color:#92400e}.spec-title.pet{color:#1e40af}.spec-title.pe{color:#166534}
+.drow{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f5f5f3;font-size:11px}
+.drow:last-child{border-bottom:none}
+.dk{color:#888}.dv{font-weight:600}
+/* RESUMEN */
+.resumen-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.rp{background:#f5f5f3;border-radius:8px;padding:8px 10px;text-align:center}
+.rp .rl{font-size:10px;color:#888;margin-bottom:2px}
+.rp .rv{font-size:15px;font-weight:700}
+/* PALLETS */
+.pallets-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.pallet-card{background:#fff;border:1px solid #e8e8e6;border-radius:8px;margin-bottom:6px;overflow:hidden}
+.pallet-head{display:flex;align-items:center;padding:8px 12px;gap:8px;cursor:pointer;font-size:12px;flex-wrap:wrap}
+.pallet-head:hover{background:#f9f9f7}
+.pallet-title{font-weight:600;flex:1}
+.pallet-body{display:none;border-top:1px solid #f0f0ee;padding:10px 12px}
+.pallet-body.open{display:block}
+.pallet-meta{display:flex;gap:10px;flex-wrap:wrap;font-size:11px;margin-bottom:8px;color:#888}
+.pallet-meta strong{color:#1a1a1a}
+.tbl-bob{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px}
+.tbl-bob th{padding:5px 8px;text-align:right;font-size:10px;font-weight:700;color:#666;border-bottom:1px solid #e8e8e6;background:#f5f5f3}
+.tbl-bob th:first-child{text-align:left}
+.tbl-bob td{padding:5px 8px;border-bottom:1px solid #f5f5f3;text-align:right}
+.tbl-bob td:first-child{text-align:left;font-weight:600;font-family:monospace;font-size:10px}
+.tbl-bob tr:last-child td{border-bottom:none}
+.tbl-bob tfoot td{font-weight:700;background:#f5f5f3;border-top:1px solid #e8e8e6}
+.pal-actions{display:flex;gap:6px;justify-content:flex-end;margin-top:8px}
+.o-foot{display:flex;gap:8px;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid #f0f0ee;margin-top:10px}
+.estado-sel{font-size:12px;border:1px solid #ddd;border-radius:7px;padding:5px 8px;background:#fff;cursor:pointer}
+/* HISTORIAL */
+.mes-sel{display:flex;align-items:center;gap:8px;margin-bottom:1rem}
+.mes-sel select{font-size:12px;padding:5px 8px;border-radius:7px;border:1px solid #ddd;background:#fff}
+.hist-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.25rem}
+.hist-card{background:#fff;border:1px solid #e8e8e6;border-radius:10px;padding:12px 14px;margin-bottom:8px;opacity:.85}
+/* BASE DATOS */
+.tbl-wrap{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#666;border-bottom:1px solid #e8e8e6;background:#f5f5f3;white-space:nowrap}
+.tbl th.left{text-align:left}
+.tbl td{padding:5px 7px;border-bottom:1px solid #f0f0ee;vertical-align:middle;text-align:right}
+.tbl td.left{text-align:left;font-weight:500}
+.tbl td.calc{background:#EBF5FB;color:#1e40af;font-weight:600}
+.tbl td.calc-pe{background:#f0fdf4;color:#166534;font-weight:600}
+.tbl tr:hover td{background:#fafaf8}
+.tbl td input{border:1px solid #e0e0e0;border-radius:6px;padding:3px 6px;font-size:12px;width:65px;background:#fff;outline:none;text-align:right;color:#1a1a1a}
+.tbl td input:focus{border-color:#3b82f6}
+.grp-fin{background:#fef3c7;color:#92400e}
+.grp-pet{background:#dbeafe;color:#1e40af}
+.grp-pe{background:#dcfce7;color:#166534}
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);display:none;align-items:flex-start;justify-content:center;padding-top:30px;z-index:100}
+.overlay.open{display:flex}
+.mcard{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:18px;width:420px;max-height:88vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.12)}
+.mcard h3{font-size:15px;font-weight:700;margin-bottom:14px}
+.mf{display:flex;flex-direction:column;gap:3px;margin-bottom:10px}
+.mf label{font-size:11px;font-weight:600;color:#555}
+.mf input,.mf select,.mf textarea{border:1px solid #ddd;border-radius:7px;padding:8px 10px;font-size:13px;background:#fff;color:#1a1a1a;width:100%;font-family:inherit;outline:none}
+.mf input:focus,.mf select:focus{border-color:#3b82f6}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.preview-specs{background:#f9f9f7;border:1px solid #e8e8e6;border-radius:8px;padding:10px 12px;margin-bottom:10px;display:none}
+.ps-title{font-size:10px;font-weight:700;color:#555;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
+.ps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.psb{padding:7px 8px;border-radius:7px;font-size:11px;line-height:1.6}
+.psb.fin{background:#fef3c7}.psb.pet{background:#dbeafe}.psb.pe{background:#dcfce7}
+.psb .pst{font-size:10px;font-weight:700;margin-bottom:4px}
+.psb.fin .pst{color:#92400e}.psb.pet .pst{color:#1e40af}.psb.pe .pst{color:#166534}
+.divider{border:none;border-top:1px solid #f0f0ee;margin:10px 0}
+.bob-hdr{display:grid;grid-template-columns:28px 1fr 1fr 1fr 1fr;gap:5px;align-items:center;margin-bottom:4px}
+.bob-hdr-c{font-size:10px;font-weight:700;color:#666;text-align:right;padding:3px 0}
+.bob-hdr-c:first-child{text-align:left}
+.bob-hdr-c:nth-child(2){text-align:center}
+.bob-row{display:grid;grid-template-columns:28px 1fr 1fr 1fr 1fr;gap:5px;align-items:center;margin-bottom:3px}
+.bob-num{font-size:10px;font-weight:700;color:#aaa;text-align:center}
+.bob-inp{border:1px solid #ddd;border-radius:6px;padding:5px 7px;font-size:12px;width:100%;background:#fff;color:#1a1a1a;text-align:right;outline:none}
+.bob-inp:focus{border-color:#3b82f6}
+.bob-calc{background:#f5f5f3;color:#888;cursor:default;font-weight:600}
+.bob-total{display:flex;justify-content:flex-end;gap:20px;font-size:12px;font-weight:600;padding:8px 0;border-top:1px solid #e8e8e6;margin-top:6px}
+.mbtns{display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:6px}
+/* REMITO */
+.remito-wrap{background:#fff;border:1px solid #e8e8e6;border-radius:8px;padding:16px}
+.rem-header{display:flex;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid #1a1a1a}
+.rem-empresa{font-size:18px;font-weight:700}
+.rem-nro{font-size:20px;font-weight:700;font-family:monospace;color:#555}
+.rem-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.rem-field{font-size:12px;padding:6px 10px;border:1px solid #e8e8e6;border-radius:7px}
+.rf-lbl{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:2px}
+.rf-val{font-weight:500}
+.rem-tbl{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:12px}
+.rem-tbl th{padding:6px 8px;text-align:right;font-size:10px;font-weight:700;color:#666;border-bottom:1px solid #e8e8e6;background:#f5f5f3}
+.rem-tbl th:first-child{text-align:left}
+.rem-tbl td{padding:5px 8px;border-bottom:1px solid #f5f5f3;text-align:right;font-size:11px}
+.rem-tbl td:first-child{text-align:left;font-family:monospace;font-weight:600}
+.rem-tbl tfoot td{font-weight:700;background:#f5f5f3;border-top:1px solid #e8e8e6}
+.rem-totales{background:#f5f5f3;border-radius:8px;padding:10px;display:flex;justify-content:space-around}
+.rt-item{text-align:center}
+.rt-lbl{font-size:10px;color:#888;margin-bottom:3px}
+.rt-val{font-size:16px;font-weight:700}
+.empty{text-align:center;padding:2rem;color:#aaa;font-size:13px}
+</style>
+</head>
+<body>
+<div class="da">
+<div class="sb">
+  <div class="sb-logo"><div class="lg">🔄 Rebobinados</div><div class="ls">Winflex — Laminados</div></div>
+  <div class="sb-section">Producción</div>
+  <button class="sb-item active" onclick="showPage('ordenes',this)">📋 Órdenes <span class="sb-cnt red" id="cnt-ord">0</span></button>
+  <button class="sb-item" onclick="showPage('historial',this)">📊 Historial <span class="sb-cnt green" id="cnt-hist">0</span></button>
+
+  <div class="sb-section">Configuración</div>
+  <button class="sb-item" onclick="showPage('bd',this)">🗄 Base de datos</button>
+  <div class="sb-footer"><strong>Jonathan</strong>Jefe de producción · Winflex</div>
+</div>
+
+<div class="main">
+
+<!-- ÓRDENES -->
+<div id="page-ordenes" class="page active">
+  <div class="top-row">
+    <div><div class="pg-title">Órdenes de producción</div><div class="pg-sub">Laminado PET/PE — seguimiento por pallet</div></div>
+    <button class="btn btn-primary" onclick="openOrdenModal()">+ Nueva orden</button>
+  </div>
+  <div class="stats" id="stats-ord"></div>
+  <div id="ordenes-list"></div>
+</div>
+
+<!-- HISTORIAL -->
+<div id="page-historial" class="page">
+  <div class="top-row"><div><div class="pg-title">Historial de producción</div><div class="pg-sub">Pedidos finalizados por mes</div></div></div>
+  <div class="mes-sel">
+    <span style="font-size:12px;font-weight:600">Mes:</span>
+    <select id="h-mes" onchange="renderHistorial()"></select>
+    <select id="h-anio" onchange="renderHistorial()"></select>
+  </div>
+  <div class="hist-stats" id="hist-stats"></div>
+  <div id="hist-list"></div>
+</div>
+
+<!-- BASE DE DATOS -->
+<div id="page-bd" class="page">
+  <div class="top-row">
+    <div><div class="pg-title">Base de datos</div><div class="pg-sub">Medidas editables · Den. PET=1.38 g/cm³ · Den. PE=0.95 g/cm³ · ⚙=calculado automático</div></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn" onclick="addProducto()">+ Agregar</button>
+      <button class="btn btn-primary" onclick="saveDB()">💾 Guardar</button>
+    </div>
+  </div>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th class="left" rowspan="2">Cliente</th>
+          <th colspan="3" class="grp-fin">Producto Final</th>
+          <th colspan="4" class="grp-pet">Lámina PET — Chivilcoy</th>
+          <th colspan="4" class="grp-pe">Lámina PE — Lanús</th>
+          <th rowspan="2"></th>
+        </tr>
+        <tr>
+          <th class="grp-fin">Ancho mm</th><th class="grp-fin">Esp. µm</th><th class="grp-fin">Peso kg</th>
+          <th class="grp-pet">Ancho mm</th><th class="grp-pet">Esp. µm</th><th class="grp-pet">Peso kg</th><th class="grp-pet">Mts ⚙</th>
+          <th class="grp-pe">Ancho mm</th><th class="grp-pe">Esp. µm</th><th class="grp-pe">Mts bob.</th><th class="grp-pe">KG PE ⚙</th>
+        </tr>
+      </thead>
+      <tbody id="bd-body"></tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- MODAL NUEVA ORDEN -->
+<div class="overlay" id="ov-orden">
+  <div class="mcard">
+    <h3>Nueva orden de producción</h3>
+    <div class="form-row">
+      <div class="mf"><label>OC del cliente</label><input id="o-oc" placeholder="ej: OC-2026-047"></div>
+      <div class="mf"><label>OP interna (auto)</label><input id="o-op" readonly style="background:#f5f5f3;color:#888"></div>
+    </div>
+    <div class="form-row">
+      <div class="mf"><label>Cliente / Producto</label><select id="o-prod" onchange="previewOrden()"></select></div>
+      <div class="mf"><label>KG solicitados</label><input type="number" id="o-kg" placeholder="ej: 10000" oninput="previewOrden()"></div>
+    </div>
+    <div class="preview-specs" id="o-preview">
+      <div class="ps-title">Especificaciones del pedido</div>
+      <div class="ps-grid" id="o-preview-content"></div>
+    </div>
+    <div class="form-row">
+      <div class="mf"><label>Fecha de entrega</label><input type="date" id="o-fecha"></div>
+      <div class="mf"><label>Partida Chivilcoy</label><input id="o-partida" placeholder="ej: 13226S-1VX"></div>
+    </div>
+    <div class="mf"><label>Observaciones</label><textarea id="o-obs" rows="2" style="resize:none"></textarea></div>
+    <div class="mbtns">
+      <div></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm" onclick="closeOv('ov-orden')">Cancelar</button>
+        <button class="btn btn-sm btn-primary" onclick="saveOrden()">Guardar orden</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PALLET -->
+<div class="overlay" id="ov-pallet">
+  <div class="mcard">
+    <h3 id="pal-title">Agregar pallet</h3>
+    <div class="form-row">
+      <div class="mf"><label>Fecha</label><input type="date" id="p-fecha"></div>
+      <div class="mf"><label>N° Pallet</label><input type="number" id="p-nro" placeholder="ej: 1"></div>
+    </div>
+    <div class="form-row">
+      <div class="mf"><label>Turno</label><select id="p-turno"><option value="M">M — Mañana</option><option value="T">T — Tarde</option><option value="N">N — Noche</option></select></div>
+      <div class="mf"><label>Operario</label><input id="p-operario" placeholder="ej: Toni"></div>
+    </div>
+    <div class="mf"><label>Proceso</label>
+      <select id="p-proceso">
+        <option value="R">R — Rebobinado</option>
+        <option value="R-R">R-R — Rebobinado / Refilado</option>
+        <option value="L-R-R">L-R-R — Laminado / Refilado / Rebobinado</option>
+      </select>
+    </div>
+    <div class="form-row3">
+      <div class="mf"><label>Cono</label><select id="p-cono"><option>3"</option><option>6"</option></select></div>
+      <div class="mf"><label>Ancho (mm)</label><input type="number" id="p-ancho" placeholder="421"></div>
+      <div class="mf"><label>Espesor (µm)</label><input type="number" id="p-esp" placeholder="500"></div>
+    </div>
+    <div class="mf"><label>Partida Chivilcoy</label><input id="p-partida" placeholder="ej: 13226S-1VX"></div>
+    <div class="form-row">
+      <div class="mf"><label>Tara del cono (kg)</label><input type="number" id="p-tara" value="0.8" step="0.01" oninput="recalcBobinas()"></div>
+      <div class="mf"><label>N° bobinas (calculado)</label><input readonly id="p-nbob-calc" style="background:#f5f5f3;color:#888"></div>
+    </div>
+    <div class="form-row">
+      <div class="mf"><label>Bobina inicio</label><input type="number" id="p-ini" placeholder="ej: 1" oninput="calcNBobinas()"></div>
+      <div class="mf"><label>Bobina fin</label><input type="number" id="p-fin" placeholder="ej: 24" oninput="calcNBobinas()"></div>
+    </div>
+    <div class="divider"></div>
+    <div style="font-size:11px;font-weight:700;color:#555;margin-bottom:8px;text-transform:uppercase">Peso bruto por bobina</div>
+    <div class="bob-hdr">
+      <div class="bob-hdr-c">#</div>
+      <div class="bob-hdr-c" style="text-align:center">N° Bobina</div>
+      <div class="bob-hdr-c">PB (kg)</div>
+      <div class="bob-hdr-c">PN (kg)</div>
+      <div class="bob-hdr-c">PB acum.</div>
+    </div>
+    <div id="bob-rows"><div style="font-size:12px;color:#aaa;text-align:center;padding:12px 0">Ingresá bobina inicio y fin para generar los campos</div></div>
+    <div class="bob-total" id="bob-totals" style="display:none">
+      <span>Bobinas: <strong id="tot-n">0</strong></span>
+      <span>PB total: <strong id="tot-pb">0,00</strong> kg</span>
+      <span>PN total: <strong id="tot-pn" style="color:#1E88E5">0,00</strong> kg</span>
+    </div>
+    <div class="mbtns">
+      <button class="btn btn-sm btn-danger" id="pal-del-btn" style="display:none" onclick="eliminarPallet()">🗑 Eliminar</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm" onclick="closeOv('ov-pallet')">Cancelar</button>
+        <button class="btn btn-sm btn-primary" onclick="savePallet()">Guardar pallet</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL REMITO -->
+<div class="overlay" id="ov-remito">
+  <div class="mcard" style="width:460px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <h3 style="margin:0">🧾 Datos para facturar</h3>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sm btn-green" onclick="copiarImagen()">📷 Copiar imagen</button>
+        <button class="btn btn-sm" onclick="closeOv('ov-remito')">✕</button>
+      </div>
+    </div>
+    <div id="remito-content" class="remito-wrap"></div>
+    <div style="font-size:11px;color:#aaa;margin-top:8px;text-align:center">Hacé clic en "Copiar imagen" y pegá en el mail con Ctrl+V</div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+const DEN_PET=1380, DEN_PE=950;
+const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+let db=[], ordenes=[], stockData={}, openId=null, palletOrdenId=null, palletEditIdx=null, remitoData=null;
+
+const DB_DEFAULT=[
+  {id:'p1',cli:'Pespasa',af_a:300,af_e:93,af_p:null,pet_a:330,pet_e:13,pet_p:null,pe_a:null,pe_e:80,pe_l:null},
+  {id:'p2',cli:'Huertas del Pilar',af_a:200,af_e:450,af_p:25,pet_a:430,pet_e:400,pet_p:100,pe_a:450,pe_e:50,pe_l:1800},
+  {id:'p3',cli:'Dantelli (357-C)',af_a:357,af_e:350,af_p:30,pet_a:380,pet_e:300,pet_p:92,pe_a:400,pe_e:50,pe_l:1800},
+  {id:'p4',cli:'Dantelli (357-N)',af_a:357,af_e:350,af_p:30,pet_a:380,pet_e:300,pet_p:92,pe_a:400,pe_e:50,pe_l:1800},
+  {id:'p5',cli:'Dantelli (323)',af_a:323,af_e:350,af_p:30,pet_a:350,pet_e:300,pet_p:92,pe_a:370,pe_e:50,pe_l:2000},
+  {id:'p6',cli:'Villa D Agri (423)',af_a:423,af_e:280,af_p:83,pet_a:450,pet_e:230,pet_p:83,pe_a:470,pe_e:50,pe_l:1800},
+  {id:'p7',cli:'Villa D Agri (323)',af_a:323,af_e:280,af_p:35,pet_a:350,pet_e:280,pet_p:70,pe_a:370,pe_e:50,pe_l:2000},
+  {id:'p8',cli:'Molinos (421-500)',af_a:421,af_e:500,af_p:25,pet_a:450,pet_e:450,pet_p:150,pe_a:470,pe_e:50,pe_l:1600},
+  {id:'p9',cli:'Molinos (472)',af_a:472,af_e:235,af_p:40,pet_a:500,pet_e:200,pet_p:80,pe_a:530,pe_e:35,pe_l:1800},
+  {id:'p10',cli:'Molinos (421-300)',af_a:421,af_e:300,af_p:40,pet_a:450,pet_e:250,pet_p:120,pe_a:470,pe_e:50,pe_l:null},
+  {id:'p11',cli:'Molinos (421-400)',af_a:421,af_e:400,af_p:30,pet_a:450,pet_e:350,pet_p:120,pe_a:470,pe_e:50,pe_l:1700},
+  {id:'p12',cli:'La italiana (350)',af_a:421,af_e:350,af_p:80,pet_a:450,pet_e:300,pet_p:150,pe_a:470,pe_e:50,pe_l:1380},
+  {id:'p13',cli:'La italiana (500)',af_a:421,af_e:500,af_p:80,pet_a:450,pet_e:450,pet_p:150,pe_a:470,pe_e:50,pe_l:1228},
+  {id:'p14',cli:'Don Yeyo (300)',af_a:321,af_e:300,af_p:35,pet_a:350,pet_e:250,pet_p:92,pe_a:370,pe_e:50,pe_l:1550},
+  {id:'p15',cli:'Mendia (312)',af_a:312,af_e:300,af_p:31,pet_a:350,pet_e:250,pet_p:92,pe_a:370,pe_e:50,pe_l:1600},
+  {id:'p16',cli:'El Artesano (300)',af_a:422,af_e:235,af_p:25,pet_a:450,pet_e:200,pet_p:78,pe_a:470,pe_e:35,pe_l:1950},
+  {id:'p17',cli:'BarielPack (400)',af_a:520,af_e:400,af_p:31,pet_a:550,pet_e:350,pet_p:92,pe_a:570,pe_e:50,pe_l:1500},
+  {id:'p18',cli:'BarielPack (600)',af_a:520,af_e:600,af_p:45,pet_a:550,pet_e:550,pet_p:92,pe_a:570,pe_e:50,pe_l:946},
+  {id:'p19',cli:'BarielPack (350)',af_a:520,af_e:350,af_p:31,pet_a:550,pet_e:300,pet_p:92,pe_a:570,pe_e:50,pe_l:1700},
+];
+
+// ─── HELPERS ───
+function toISO(d){if(typeof d==='string')return d;return d.toISOString().split('T')[0]}
+function hoyISO(){return toISO(new Date())}
+function addDays(iso,n){const d=new Date(iso+'T12:00:00');d.setDate(d.getDate()+n);return toISO(d)}
+function fmt(n,d=0){if(n==null||isNaN(n))return'—';return Number(n).toLocaleString('es-AR',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function fmtDate(iso){if(!iso)return'—';const[y,m,d]=iso.split('-');return`${d}/${m}/${y}`}
+
+// ─── CÁLCULOS ───
+function calcMtsPET(kg,ancho_mm,esp_um){
+  if(!kg||!ancho_mm||!esp_um)return null;
+  return kg/((ancho_mm/1000)*(esp_um/1e6)*DEN_PET);
+}
+function calcKgPE(mts,ancho_mm,esp_um){
+  if(!mts||!ancho_mm||!esp_um)return null;
+  return mts*(ancho_mm/1000)*(esp_um/1e6)*DEN_PE;
+}
+function calcMtsBobPET(p){
+  if(!p.pet_p||!p.pet_a||!p.pet_e)return null;
+  return p.pet_p/((p.pet_a/1000)*(p.pet_e/1e6)*DEN_PET);
+}
+function calcKgPEBob(p){
+  if(!p.pe_l||!p.pe_a||!p.pe_e)return null;
+  return p.pe_l*(p.pe_a/1000)*(p.pe_e/1e6)*DEN_PE;
+}
+
+function calcPedido(p,kg){
+  const pm2PET=(p.pet_e/1e6)*DEN_PET;
+  const pm2PE=(p.pe_e/1e6)*DEN_PE;
+  const tot=pm2PET+pm2PE;
+  const kgPET=kg*(pm2PET/tot);
+  const kgPE=kg-kgPET;
+  const mPET=calcMtsPET(kgPET,p.pet_a,p.pet_e);
+  const kPE=calcKgPE(mPET,p.pe_a,p.pe_e);
+  const mtsBob=calcMtsBobPET(p);
+  const bobPET=mtsBob&&mPET?Math.ceil(mPET/mtsBob):null;
+  const bobPE=p.pe_l&&mPET?Math.ceil(mPET/p.pe_l):null;
+  return{kgPET,kgPE:kPE||kgPE,mPET,bobPET,bobPE,pctPET:pm2PET/tot*100};
+}
+
+function calcFaltante(o){
+  const p=db.find(x=>x.id===o.dbId);
+  if(!p||!o.calc)return null;
+  const pallets=o.pallets||[];
+  const kgPNTotal=pallets.reduce((a,pal)=>{
+    return a+(pal.bobinas||[]).reduce((b,bob)=>b+(bob.pn||0),0);
+  },0);
+  const resta=Math.max(o.kg-kgPNTotal,0);
+  if(resta<=0)return{completado:true};
+  const c=calcPedido(p,resta);
+  const mtsBob=calcMtsBobPET(p);
+  return{
+    resta,kgPET:c.kgPET,mPET:c.mPET,
+    bobPET:c.bobPET,kgPE:c.kgPE,
+    bobPE:c.bobPE,completado:false,
+    mtsBob
+  };
+}
+
+// ─── LOAD / SAVE ───
+function loadAll(){
+  try{db=JSON.parse(localStorage.getItem('reb3_db')||'[]');}catch(e){db=[];}
+  try{ordenes=JSON.parse(localStorage.getItem('reb3_ord')||'[]');}catch(e){ordenes=[];}
+  try{stockData=JSON.parse(localStorage.getItem('reb3_stock')||'{}');}catch(e){stockData={};}
+  if(!db.length)db=DB_DEFAULT.map(p=>({...p}));
+  loadStockInputs();
+  initHistSel();
+  renderAll();
+}
+function saveAll(){
+  try{localStorage.setItem('reb3_db',JSON.stringify(db));}catch(e){}
+  try{localStorage.setItem('reb3_ord',JSON.stringify(ordenes));}catch(e){}
+}
+function saveDB(){saveAll();buildProdSel();renderDB();alert('✅ Base de datos guardada.');}
+function saveStock(){
+  stockData={
+    petIng:+document.getElementById('s-pet-ing').value||0,
+    petCons:+document.getElementById('s-pet-cons').value||0,
+    peProd:+document.getElementById('s-pe-prod').value||0,
+    peCons:+document.getElementById('s-pe-cons').value||0,
+    lamProd:+document.getElementById('s-lam-prod').value||0,
+    lamRef:+document.getElementById('s-lam-ref').value||0,
+    finProd:+document.getElementById('s-fin-prod').value||0,
+    finEnt:+document.getElementById('s-fin-ent').value||0,
+  };
+  try{localStorage.setItem('reb3_stock',JSON.stringify(stockData));}catch(e){}
+  calcStock();alert('✅ Stock guardado.');
+}
+function loadStockInputs(){
+  const s=stockData;
+  document.getElementById('s-pet-ing').value=s.petIng||0;
+  document.getElementById('s-pet-cons').value=s.petCons||0;
+  document.getElementById('s-pe-prod').value=s.peProd||0;
+  document.getElementById('s-pe-cons').value=s.peCons||0;
+  document.getElementById('s-lam-prod').value=s.lamProd||0;
+  document.getElementById('s-lam-ref').value=s.lamRef||0;
+  document.getElementById('s-fin-prod').value=s.finProd||0;
+  document.getElementById('s-fin-ent').value=s.finEnt||0;
+  calcStock();
+}
+
+// ─── RENDER ───
+function renderAll(){renderOrdenes();renderDB();calcStock();updateCounts();}
+
+function updateCounts(){
+  document.getElementById('cnt-ord').textContent=ordenes.filter(o=>o.estado!=='finalizada').length;
+  document.getElementById('cnt-hist').textContent=ordenes.filter(o=>o.estado==='finalizada').length;
+}
+
+// ─── ÓRDENES ───
+function renderOrdenes(){
+  const pend=ordenes.filter(o=>o.estado==='pendiente').length;
+  const prod=ordenes.filter(o=>o.estado==='en-produccion').length;
+  const fin=ordenes.filter(o=>o.estado==='finalizada').length;
+  const kgAct=ordenes.filter(o=>o.estado!=='finalizada').reduce((a,o)=>a+o.kg,0);
+  document.getElementById('stats-ord').innerHTML=`
+    <div class="stat"><div class="sl">Pendientes</div><div class="sv" style="color:#92400e">${pend}</div></div>
+    <div class="stat"><div class="sl">En producción</div><div class="sv" style="color:#1e40af">${prod}</div></div>
+    <div class="stat"><div class="sl">Finalizadas</div><div class="sv" style="color:#166534">${fin}</div></div>
+    <div class="stat"><div class="sl">KG activos</div><div class="sv">${fmt(kgAct)}</div></div>
+  `;
+  const activos=ordenes.filter(o=>o.estado!=='finalizada');
+  const list=document.getElementById('ordenes-list');
+  if(!activos.length){list.innerHTML='<div class="empty">No hay órdenes activas.<br>Los pedidos finalizados están en Historial.</div>';return;}
+  list.innerHTML=activos.map((o,i)=>{
+    const isOpen=openId===o.id;
+    const pallets=o.pallets||[];
+    const kgPN=pallets.reduce((a,p)=>a+(p.bobinas||[]).reduce((b,bob)=>b+(bob.pn||0),0),0);
+    const pct=o.kg>0?Math.min(kgPN/o.kg*100,100):0;
+    const resta=Math.max(o.kg-kgPN,0);
+    const stCls=o.estado==='en-produccion'?'b-prod':'b-pend';
+    const stTxt=o.estado==='en-produccion'?'🔵 En producción':'⏳ Pendiente';
+    const falt=calcFaltante(o);
+    return`<div class="orden-card ${o.estado==='en-produccion'?'en-produccion':'pendiente'}">
+      <div class="orden-head" onclick="toggleOrden('${o.id}')">
+        <div class="o-nro">${o.op||'OP-???'}</div>
+        <div class="o-main">
+          <div class="o-prod">${o.cliente}</div>
+          <div class="o-sub">
+            <span class="o-tag">OC</span><span>${o.oc||'—'}</span>
+            <span class="o-tag">OP</span><span>${o.op||'—'}</span>
+            ${o.fecha?`<span>Entrega: ${fmtDate(o.fecha)}</span>`:''}
+            ${o.partida?`<span>Partida: ${o.partida}</span>`:''}
+          </div>
+        </div>
+        <div style="font-size:14px;font-weight:700;min-width:80px;text-align:right">${fmt(o.kg)} <span style="font-size:11px;font-weight:400;color:#888">kg</span></div>
+        <span class="badge ${stCls}">${stTxt}</span>
+        <span class="chevron${isOpen?' open':''}">&#8964;</span>
+      </div>
+      <!-- BARRA PROGRESO -->
+      <div class="prog-wrap">
+        <div class="prog-label">
+          <span>Producido: <strong>${fmt(kgPN,1)} kg PN</strong> (${pct.toFixed(1)}%)</span>
+          <span>Resta: <strong>${fmt(resta,1)} kg</strong></span>
+        </div>
+        <div class="prog-bar"><div class="prog-fill${pct>=100?' done':''}" style="width:${pct}%"></div></div>
+      </div>
+      <!-- FALTANTE -->
+      ${falt?falt.completado?
+        `<div class="faltante-box"><div class="completado-msg">✅ Pedido completado</div></div>`:
+        `<div class="faltante-box">
+          <div class="faltante-grid">
+            <div class="faltante-blk">
+              <div class="faltante-title pet">🔵 PET faltante</div>
+              <div class="frow"><span class="fk">KG requeridos</span><span class="fv">${fmt(falt.kgPET,1)} kg</span></div>
+              <div class="frow"><span class="fk">Metros necesarios</span><span class="fv">${falt.mPET!=null?fmt(falt.mPET,0)+' m':'—'}</span></div>
+              <div class="frow"><span class="fk">Bobinas necesarias</span><span class="fv">${falt.bobPET!=null?falt.bobPET+' bob.':'—'}</span></div>
+            </div>
+            <div class="faltante-blk">
+              <div class="faltante-title pe">🟢 PE faltante</div>
+              <div class="frow"><span class="fk">KG requeridos</span><span class="fv">${fmt(falt.kgPE,1)} kg</span></div>
+              <div class="frow"><span class="fk">Metros necesarios</span><span class="fv">${falt.mPET!=null?fmt(falt.mPET,0)+' m':'—'}</span></div>
+              <div class="frow"><span class="fk">Bobinas necesarias</span><span class="fv">${falt.bobPE!=null?falt.bobPE+' bob.':'—'}</span></div>
+            </div>
+          </div>
+        </div>`:''}
+      ${isOpen?`<div class="orden-body open">
+        <!-- SPECS -->
+        ${o.calc?`<div class="specs-grid">
+          <div class="spec-block"><div class="spec-title fin">📦 Producto final</div>
+            ${specRow(o.specs,'af_a','Ancho','mm')}${specRow(o.specs,'af_e','Espesor','µm')}${specRow(o.specs,'af_p','Peso bobina','kg')}
+          </div>
+          <div class="spec-block"><div class="spec-title pet">🔵 PET — Chivilcoy</div>
+            ${specRow(o.specs,'pet_a','Ancho','mm')}${specRow(o.specs,'pet_e','Espesor','µm')}${specRow(o.specs,'pet_p','Peso bobina','kg')}
+            <div class="drow"><span class="dk">Mts bobina</span><span class="dv">${fmt(calcMtsBobPET(o.specs),0)} m</span></div>
+            <div class="drow"><span class="dk">KG requeridos</span><span class="dv">${fmt(o.calc.kgPET,0)} kg</span></div>
+            <div class="drow"><span class="dk">Bobinas totales</span><span class="dv">${o.calc.bobPET!=null?o.calc.bobPET+' bob.':'—'}</span></div>
+          </div>
+          <div class="spec-block"><div class="spec-title pe">🟢 PE — Lanús</div>
+            ${specRow(o.specs,'pe_a','Ancho','mm')}${specRow(o.specs,'pe_e','Espesor','µm')}
+            <div class="drow"><span class="dk">Mts bobina</span><span class="dv">${o.specs.pe_l?fmt(o.specs.pe_l,0)+' m':'—'}</span></div>
+            <div class="drow"><span class="dk">KG requeridos</span><span class="dv">${fmt(o.calc.kgPE,0)} kg</span></div>
+            <div class="drow"><span class="dk">Bobinas totales</span><span class="dv">${o.calc.bobPE!=null?o.calc.bobPE+' bob.':'—'}</span></div>
+          </div>
+        </div>`:''}
+        <!-- RESUMEN PALLETS -->
+        ${pallets.length?`<div class="resumen-grid">
+          <div class="rp"><div class="rl">Pallets</div><div class="rv">${pallets.length}</div></div>
+          <div class="rp"><div class="rl">Bobinas</div><div class="rv">${pallets.reduce((a,p)=>a+(p.bobinas||[]).length,0)}</div></div>
+          <div class="rp"><div class="rl">KG Bruto</div><div class="rv">${fmt(pallets.reduce((a,p)=>a+(p.bobinas||[]).reduce((b,bob)=>b+(bob.pb||0),0),0),1)}</div></div>
+          <div class="rp"><div class="rl">KG Neto</div><div class="rv" style="color:#1E88E5">${fmt(kgPN,1)}</div></div>
+        </div>`:''}
+        <!-- PALLETS -->
+        <div class="pallets-hdr">
+          <div style="font-size:12px;font-weight:700;color:#555">📦 Pallets registrados</div>
+          <button class="btn btn-sm btn-primary" onclick="openPalletModal('${o.id}',null)">+ Agregar pallet</button>
+        </div>
+        ${pallets.length?pallets.map((pal,pi)=>{
+          const totPB=pal.bobinas.reduce((a,b)=>a+(b.pb||0),0);
+          const totPN=pal.bobinas.reduce((a,b)=>a+(b.pn||0),0);
+          const isOpen2=pal._open;
+          return`<div class="pallet-card">
+            <div class="pallet-head" onclick="togglePallet('${o.id}',${pi})">
+              <span>📦</span>
+              <div class="pallet-title">Pallet #${pal.nro} — Bob. ${pal.bIni} a ${pal.bFin}</div>
+              <span style="font-size:11px;color:#888">${fmtDate(pal.fecha)} · ${pal.turno} · ${pal.operario} · ${pal.proceso}</span>
+              <span class="badge b-fin">${fmt(totPN,1)} kg PN</span>
+              <span class="chevron${isOpen2?' open':''}">&#8964;</span>
+            </div>
+            ${isOpen2?`<div class="pallet-body open">
+              <div class="pallet-meta">
+                <span>Cono: <strong>${pal.cono}</strong></span>
+                <span>Ancho: <strong>${pal.ancho} mm</strong></span>
+                <span>Espesor: <strong>${pal.esp} µm</strong></span>
+                ${pal.partida?`<span>Partida: <strong>${pal.partida}</strong></span>`:''}
+                <span>Tara: <strong>${pal.tara} kg</strong></span>
+              </div>
+              <table class="tbl-bob">
+                <thead><tr><th>N° Bobina</th><th>PB (kg)</th><th>PN (kg)</th></tr></thead>
+                <tbody>${pal.bobinas.map(b=>`<tr>
+                  <td>Bob. ${b.num}</td>
+                  <td>${fmt(b.pb,2)}</td>
+                  <td style="color:#1E88E5;font-weight:600">${fmt(b.pn,2)}</td>
+                </tr>`).join('')}</tbody>
+                <tfoot><tr>
+                  <td style="text-align:left">Total (${pal.bobinas.length} bob.)</td>
+                  <td>${fmt(totPB,2)}</td>
+                  <td style="color:#1E88E5">${fmt(totPN,2)}</td>
+                </tr></tfoot>
+              </table>
+              <div class="pal-actions">
+                <button class="btn btn-sm btn-green" onclick="abrirRemito('${o.id}',${pi})">🧾 Datos para facturar</button>
+                <button class="btn btn-sm" onclick="openPalletModal('${o.id}',${pi})">✏️ Editar</button>
+                <button class="btn btn-sm btn-danger" onclick="eliminarPalletDirect('${o.id}',${pi})">🗑</button>
+              </div>
+            </div>`:''}
+          </div>`;
+        }).join(''):`<div class="empty" style="padding:1rem">No hay pallets registrados todavía.</div>`}
+        ${o.obs?`<div style="background:#f9f9f7;border-radius:8px;padding:8px 12px;font-size:12px;color:#555;margin:10px 0">💬 ${o.obs}</div>`:''}
+        <div class="o-foot">
+          <select class="estado-sel" onchange="cambiarEstado('${o.id}',this.value)">
+            <option value="pendiente"${o.estado==='pendiente'?' selected':''}>⏳ Pendiente</option>
+            <option value="en-produccion"${o.estado==='en-produccion'?' selected':''}>🔵 En producción</option>
+            <option value="finalizada">✅ Finalizada → historial</option>
+          </select>
+          <button class="btn btn-sm btn-danger" onclick="eliminarOrden('${o.id}')">🗑 Eliminar orden</button>
+        </div>
+      </div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function specRow(s,k,label,unit){if(!s||!s[k])return'';return`<div class="drow"><span class="dk">${label}</span><span class="dv">${fmt(s[k],0)} ${unit}</span></div>`;}
+
+function toggleOrden(id){openId=openId===id?null:id;renderOrdenes();}
+function togglePallet(oid,pi){const o=ordenes.find(x=>x.id===oid);if(!o)return;o.pallets[pi]._open=!o.pallets[pi]._open;renderOrdenes();}
+
+function cambiarEstado(id,val){
+  const o=ordenes.find(x=>x.id===id);if(!o)return;
+  if(val==='finalizada'&&!confirm('¿Finalizar y mover al historial?'))return;
+  o.estado=val;
+  if(val==='finalizada')o.fechaFin=hoyISO();
+  saveAll();openId=null;renderOrdenes();renderHistorial();updateCounts();
+}
+function eliminarOrden(id){if(!confirm('¿Eliminar esta orden?'))return;ordenes=ordenes.filter(x=>x.id!==id);openId=null;saveAll();renderOrdenes();updateCounts();}
+
+// ─── NUEVA ORDEN ───
+function buildProdSel(){
+  const sel=document.getElementById('o-prod');if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML=db.map((p,i)=>`<option value="${i}">${p.cli}</option>`).join('');
+  if(cur)sel.value=cur;
+}
+
+function previewOrden(){
+  const kg=+document.getElementById('o-kg').value||0;
+  const idx=+document.getElementById('o-prod').value;
+  const p=db[idx];
+  const pv=document.getElementById('o-preview');
+  if(!kg||!p||!p.pet_e||!p.pe_e){pv.style.display='none';return;}
+  const c=calcPedido(p,kg);
+  const mtsBob=calcMtsBobPET(p);
+  pv.style.display='block';
+  document.getElementById('o-preview-content').innerHTML=`
+    <div class="psb fin"><div class="pst">📦 Producto final</div>Ancho: <strong>${p.af_a} mm</strong><br>Espesor: <strong>${p.af_e} µm</strong><br>Peso bob.: <strong>${p.af_p||'—'} kg</strong></div>
+    <div class="psb pet"><div class="pst">🔵 PET — Chivilcoy</div>Ancho: <strong>${p.pet_a} mm</strong><br>Espesor: <strong>${p.pet_e} µm</strong><br>Peso bob.: <strong>${p.pet_p||'—'} kg</strong><br>Mts bob.: <strong>${mtsBob?fmt(mtsBob,0)+' m':'—'}</strong><br>KG req.: <strong>${fmt(c.kgPET,0)} kg</strong><br>Bobinas: <strong>${c.bobPET!=null?c.bobPET+' bob.':'—'}</strong></div>
+    <div class="psb pe"><div class="pst">🟢 PE — Lanús</div>Ancho: <strong>${p.pe_a||'—'} mm</strong><br>Espesor: <strong>${p.pe_e||'—'} µm</strong><br>Mts bob.: <strong>${p.pe_l?fmt(p.pe_l,0)+' m':'—'}</strong><br>KG req.: <strong>${fmt(c.kgPE,0)} kg</strong><br>Bobinas: <strong>${c.bobPE!=null?c.bobPE+' bob.':'—'}</strong></div>
+  `;
+}
+
+function nextOP(){
+  const nums=ordenes.map(o=>{const m=o.op?.match(/(\d+)$/);return m?+m[1]:0;});
+  return'OP-'+String((nums.length?Math.max(...nums):0)+1).padStart(3,'0');
+}
+
+function openOrdenModal(){
+  buildProdSel();
+  document.getElementById('o-oc').value='';document.getElementById('o-obs').value='';
+  document.getElementById('o-partida').value='';document.getElementById('o-fecha').value=hoyISO();
+  document.getElementById('o-op').value=nextOP();
+  document.getElementById('o-kg').value='';
+  document.getElementById('o-preview').style.display='none';
+  openOv('ov-orden');setTimeout(()=>document.getElementById('o-oc').focus(),50);
+}
+
+function saveOrden(){
+  const kg=+document.getElementById('o-kg').value;
+  if(!kg||kg<=0){alert('Ingresá los KG solicitados');return;}
+  const idx=+document.getElementById('o-prod').value;
+  const p=db[idx];
+  if(!p.pet_e||!p.pe_e){alert('Producto sin datos completos en la base de datos.');return;}
+  const c=calcPedido(p,kg);
+  ordenes.unshift({
+    id:'o'+Date.now(),
+    oc:document.getElementById('o-oc').value,
+    op:document.getElementById('o-op').value,
+    cliente:p.cli,kg,dbId:p.id,
+    fecha:document.getElementById('o-fecha').value,
+    partida:document.getElementById('o-partida').value,
+    obs:document.getElementById('o-obs').value,
+    estado:'pendiente',calc:c,specs:{...p},
+    pallets:[],fechaCreacion:hoyISO()
+  });
+  saveAll();closeOv('ov-orden');renderOrdenes();updateCounts();
+}
+
+// ─── PALLETS ───
+function openPalletModal(oid,pi){
+  palletOrdenId=oid;palletEditIdx=pi;
+  const o=ordenes.find(x=>x.id===oid);
+  const pal=pi!=null?o.pallets[pi]:null;
+  document.getElementById('pal-title').textContent=pal?'Editar pallet':'Agregar pallet';
+  document.getElementById('pal-del-btn').style.display=pal?'inline-flex':'none';
+  document.getElementById('p-fecha').value=pal?.fecha||hoyISO();
+  document.getElementById('p-nro').value=pal?.nro||(o.pallets.length+1);
+  document.getElementById('p-turno').value=pal?.turno||'M';
+  document.getElementById('p-operario').value=pal?.operario||'';
+  document.getElementById('p-proceso').value=pal?.proceso||'R-R';
+  document.getElementById('p-cono').value=pal?.cono||'3"';
+  document.getElementById('p-ancho').value=pal?.ancho||o.specs?.af_a||'';
+  document.getElementById('p-esp').value=pal?.esp||o.specs?.af_e||'';
+  document.getElementById('p-partida').value=pal?.partida||o.partida||'';
+  document.getElementById('p-tara').value=pal?.tara||0.8;
+  document.getElementById('p-ini').value=pal?.bIni||'';
+  document.getElementById('p-fin').value=pal?.bFin||'';
+  document.getElementById('p-nbob-calc').value='';
+  document.getElementById('bob-rows').innerHTML='<div style="font-size:12px;color:#aaa;text-align:center;padding:12px 0">Ingresá bobina inicio y fin para generar los campos</div>';
+  document.getElementById('bob-totals').style.display='none';
+  if(pal?.bIni&&pal?.bFin){
+    document.getElementById('p-ini').value=pal.bIni;
+    document.getElementById('p-fin').value=pal.bFin;
+    calcNBobinas();
+    setTimeout(()=>{pal.bobinas.forEach((b,i)=>{const el=document.getElementById('pb-'+i);if(el)el.value=b.pb;});recalcBobinas();},100);
+  }
+  openOv('ov-pallet');
+}
+
+function calcNBobinas(){
+  const ini=parseInt(document.getElementById('p-ini').value)||0;
+  const fin=parseInt(document.getElementById('p-fin').value)||0;
+  const n=ini>0&&fin>=ini?fin-ini+1:0;
+  document.getElementById('p-nbob-calc').value=n>0?n+' bobinas':'';
+  generarFilasBobinas(ini,n);
+}
+
+function generarFilasBobinas(ini,n){
+  const wrap=document.getElementById('bob-rows');
+  if(n<=0){wrap.innerHTML='<div style="font-size:12px;color:#aaa;text-align:center;padding:12px 0">Ingresá bobina inicio y fin para generar los campos</div>';document.getElementById('bob-totals').style.display='none';return;}
+  wrap.innerHTML=Array.from({length:n},(_,i)=>`
+    <div class="bob-row">
+      <div class="bob-num">${ini+i}</div>
+      <div style="font-size:10px;color:#aaa;text-align:center;font-weight:600">Bob.${ini+i}</div>
+      <input class="bob-inp" type="number" step="0.01" placeholder="0,00" id="pb-${i}" oninput="recalcBobinas()">
+      <input class="bob-inp bob-calc" readonly id="pn-${i}" placeholder="—">
+      <input class="bob-inp bob-calc" readonly id="ac-${i}" placeholder="—" style="font-size:10px">
+    </div>`).join('');
+  document.getElementById('bob-totals').style.display='flex';
+  recalcBobinas();
+}
+
+function recalcBobinas(){
+  const ini=parseInt(document.getElementById('p-ini').value)||0;
+  const fin=parseInt(document.getElementById('p-fin').value)||0;
+  const n=ini>0&&fin>=ini?fin-ini+1:0;
+  const tara=parseFloat(document.getElementById('p-tara').value)||0;
+  let totPB=0,totPN=0,acum=0;
+  for(let i=0;i<n;i++){
+    const pb=parseFloat(document.getElementById('pb-'+i)?.value)||0;
+    const pn=pb>0?Math.max(pb-tara,0):0;
+    acum+=pb;
+    const pnEl=document.getElementById('pn-'+i);
+    const acEl=document.getElementById('ac-'+i);
+    if(pnEl)pnEl.value=pb>0?pn.toFixed(2):'';
+    if(acEl)acEl.value=acum>0?acum.toFixed(2):'';
+    totPB+=pb;totPN+=pn;
+  }
+  const f=v=>v.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('tot-n').textContent=n;
+  document.getElementById('tot-pb').textContent=f(totPB);
+  document.getElementById('tot-pn').textContent=f(totPN);
+}
+
+function savePallet(){
+  const ini=parseInt(document.getElementById('p-ini').value)||0;
+  const fin=parseInt(document.getElementById('p-fin').value)||0;
+  if(!ini||!fin||fin<ini){alert('Ingresá bobina inicio y fin correctamente');return;}
+  const n=fin-ini+1;
+  const tara=parseFloat(document.getElementById('p-tara').value)||0;
+  const bobinas=Array.from({length:n},(_,i)=>{
+    const pb=parseFloat(document.getElementById('pb-'+i)?.value)||0;
+    const pn=pb>0?Math.max(pb-tara,0):0;
+    return{num:ini+i,pb,pn};
+  });
+  const pal={
+    nro:+document.getElementById('p-nro').value||1,
+    fecha:document.getElementById('p-fecha').value,
+    turno:document.getElementById('p-turno').value,
+    operario:document.getElementById('p-operario').value,
+    proceso:document.getElementById('p-proceso').value,
+    cono:document.getElementById('p-cono').value,
+    ancho:+document.getElementById('p-ancho').value||0,
+    esp:+document.getElementById('p-esp').value||0,
+    partida:document.getElementById('p-partida').value,
+    tara,bIni:ini,bFin:fin,bobinas,_open:true
+  };
+  const o=ordenes.find(x=>x.id===palletOrdenId);
+  if(!o)return;
+  if(palletEditIdx!=null)o.pallets[palletEditIdx]=pal;
+  else o.pallets.push(pal);
+  if(o.estado==='pendiente')o.estado='en-produccion';
+  saveAll();closeOv('ov-pallet');openId=palletOrdenId;renderOrdenes();
+}
+
+function eliminarPallet(){
+  if(!confirm('¿Eliminar este pallet?'))return;
+  const o=ordenes.find(x=>x.id===palletOrdenId);
+  if(o)o.pallets.splice(palletEditIdx,1);
+  saveAll();closeOv('ov-pallet');renderOrdenes();
+}
+function eliminarPalletDirect(oid,pi){
+  if(!confirm('¿Eliminar este pallet?'))return;
+  const o=ordenes.find(x=>x.id===oid);
+  if(o){o.pallets.splice(pi,1);saveAll();renderOrdenes();}
+}
+
+// ─── REMITO ───
+function abrirRemito(oid,pi){
+  const o=ordenes.find(x=>x.id===oid);if(!o)return;
+  const pal=o.pallets[pi];if(!pal)return;
+  const totPB=pal.bobinas.reduce((a,b)=>a+(b.pb||0),0);
+  const totPN=pal.bobinas.reduce((a,b)=>a+(b.pn||0),0);
+  document.getElementById('remito-content').innerHTML=`
+    <div class="rem-header">
+      <div><div class="rem-empresa">Winflex S.A.</div><div style="font-size:11px;color:#888;margin-top:2px">Remito de producción</div></div>
+      <div style="text-align:right"><div class="rem-nro">Pallet #${pal.nro}</div><div style="font-size:11px;color:#888">${o.op||''} · ${o.oc||''}</div></div>
+    </div>
+    <div class="rem-grid">
+      <div class="rem-field"><div class="rf-lbl">Cliente</div><div class="rf-val">${o.cliente}</div></div>
+      <div class="rem-field"><div class="rf-lbl">Fecha</div><div class="rf-val">${fmtDate(pal.fecha)}</div></div>
+      <div class="rem-field"><div class="rf-lbl">Turno</div><div class="rf-val">${pal.turno}</div></div>
+      <div class="rem-field"><div class="rf-lbl">Operario</div><div class="rf-val">${pal.operario||'—'}</div></div>
+      <div class="rem-field"><div class="rf-lbl">Proceso</div><div class="rf-val">${pal.proceso}</div></div>
+      <div class="rem-field"><div class="rf-lbl">Cono</div><div class="rf-val">${pal.cono}</div></div>
+      <div class="rem-field"><div class="rf-lbl">Ancho</div><div class="rf-val">${pal.ancho} mm</div></div>
+      <div class="rem-field"><div class="rf-lbl">Espesor</div><div class="rf-val">${pal.esp} µm</div></div>
+      ${pal.partida?`<div class="rem-field" style="grid-column:1/-1"><div class="rf-lbl">Partida Chivilcoy</div><div class="rf-val">${pal.partida}</div></div>`:''}
+    </div>
+    <table class="rem-tbl">
+      <thead><tr><th>N° Bobina</th><th>PB (kg)</th><th>PN (kg)</th></tr></thead>
+      <tbody>${pal.bobinas.map(b=>`<tr>
+        <td>Bob. ${b.num}</td>
+        <td>${fmt(b.pb,2)}</td>
+        <td style="color:#1E88E5;font-weight:600">${fmt(b.pn,2)}</td>
+      </tr>`).join('')}</tbody>
+      <tfoot><tr><td>Total — ${pal.bobinas.length} bob.</td><td>${fmt(totPB,2)}</td><td style="color:#1E88E5">${fmt(totPN,2)}</td></tr></tfoot>
+    </table>
+    <div class="rem-totales">
+      <div class="rt-item"><div class="rt-lbl">Bobinas</div><div class="rt-val">${pal.bobinas.length}</div></div>
+      <div class="rt-item"><div class="rt-lbl">Peso Bruto</div><div class="rt-val">${fmt(totPB,2)} kg</div></div>
+      <div class="rt-item"><div class="rt-lbl">Peso Neto</div><div class="rt-val" style="color:#1E88E5">${fmt(totPN,2)} kg</div></div>
+    </div>
+  `;
+  openOv('ov-remito');
+}
+
+async function copiarImagen(){
+  const el=document.getElementById('remito-content');
+  try{
+    const canvas=await html2canvas(el,{backgroundColor:'#ffffff',scale:2,useCORS:true});
+    canvas.toBlob(async blob=>{
+      try{
+        await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
+        alert('✅ Imagen copiada. Pegá en el mail con Ctrl+V.');
+      }catch(e){
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a');a.href=url;a.download='remito-pallet.png';a.click();
+        URL.revokeObjectURL(url);
+      }
+    });
+  }catch(e){alert('No se pudo copiar. Hacé una captura de pantalla del remito.');}
+}
+
+// ─── HISTORIAL ───
+function initHistSel(){
+  const sm=document.getElementById('h-mes');
+  const sa=document.getElementById('h-anio');
+  if(sm.options.length)return;
+  const now=new Date();
+  MESES.forEach((m,i)=>{const o=document.createElement('option');o.value=i;o.textContent=m;if(i===now.getMonth())o.selected=true;sm.appendChild(o);});
+  const anio=now.getFullYear();
+  for(let y=anio-2;y<=anio+1;y++){const o=document.createElement('option');o.value=y;o.textContent=y;if(y===anio)o.selected=true;sa.appendChild(o);}
+}
+
+function renderHistorial(){
+  const mes=parseInt(document.getElementById('h-mes').value);
+  const anio=parseInt(document.getElementById('h-anio').value);
+  const mesStr=String(mes+1).padStart(2,'0');
+  const fin=ordenes.filter(o=>o.estado==='finalizada'&&o.fechaFin?.startsWith(`${anio}-${mesStr}`));
+  const kgProd=fin.reduce((a,o)=>a+(o.pallets||[]).reduce((b,p)=>b+(p.bobinas||[]).reduce((c,bob)=>c+(bob.pn||0),0),0),0);
+  const bobTotal=fin.reduce((a,o)=>a+(o.pallets||[]).reduce((b,p)=>b+(p.bobinas||[]).length,0),0);
+  document.getElementById('hist-stats').innerHTML=`
+    <div class="stat"><div class="sl">Pedidos finalizados</div><div class="sv" style="color:#166534">${fin.length}</div><div class="ss">${MESES[mes]} ${anio}</div></div>
+    <div class="stat"><div class="sl">KG producidos (PN)</div><div class="sv">${fmt(kgProd,0)}</div></div>
+    <div class="stat"><div class="sl">Bobinas producidas</div><div class="sv">${bobTotal}</div></div>
+  `;
+  const list=document.getElementById('hist-list');
+  if(!fin.length){list.innerHTML=`<div class="empty">No hay pedidos finalizados en ${MESES[mes]} ${anio}.</div>`;return;}
+  list.innerHTML=fin.map(o=>{
+    const kgPN=(o.pallets||[]).reduce((a,p)=>a+(p.bobinas||[]).reduce((b,bob)=>b+(bob.pn||0),0),0);
+    const pct=o.kg>0?Math.min(kgPN/o.kg*100,100):0;
+    return`<div class="hist-card">
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;flex-wrap:wrap">
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700">${o.cliente}</div>
+          <div style="font-size:11px;color:#888;margin-top:2px">
+            ${o.op||''} · ${o.oc||''}${o.partida?' · Partida: '+o.partida:''}${o.fechaFin?' · Finalizado: '+fmtDate(o.fechaFin):''}
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:14px;font-weight:700">${fmt(o.kg)} kg</div>
+          <div style="font-size:11px;color:#888">${(o.pallets||[]).length} pallets · ${fmt(kgPN,1)} kg PN</div>
+        </div>
+        <span class="badge b-fin">✅ Finalizada</span>
+      </div>
+      <div class="prog-bar" style="margin-bottom:8px"><div class="prog-fill done" style="width:${pct}%"></div></div>
+      ${o.pallets?.length?`<details><summary style="font-size:11px;cursor:pointer;color:#888">Ver ${o.pallets.length} pallet${o.pallets.length>1?'s':''}</summary>
+        <div style="margin-top:8px">${o.pallets.map(pal=>{
+          const totPN=pal.bobinas.reduce((a,b)=>a+(b.pn||0),0);
+          return`<div style="font-size:12px;padding:6px 0;border-bottom:1px solid #f0f0ee;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+            <span><strong>Pallet #${pal.nro}</strong> · Bob.${pal.bIni} a ${pal.bFin} · ${fmtDate(pal.fecha)} · ${pal.turno} · ${pal.operario} · ${pal.proceso}</span>
+            <span style="font-weight:700;color:#166534">${fmt(totPN,1)} kg PN</span>
+          </div>`;
+        }).join('')}</div></details>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ─── STOCK ───
+function calcStock(){
+  const v=id=>+document.getElementById(id)?.value||0;
+  const sets=[['s-pet-disp',v('s-pet-ing')-v('s-pet-cons'),'#166534'],['s-pe-disp',v('s-pe-prod')-v('s-pe-cons'),'#166534'],['s-lam-disp',v('s-lam-prod')-v('s-lam-ref'),'#4c1d95'],['s-fin-disp',v('s-fin-prod')-v('s-fin-ent'),'#166534']];
+  sets.forEach(([id,val,col])=>{const el=document.getElementById(id);if(el){el.textContent=fmt(val)+' bob.';el.style.color=val>=0?col:'#991b1b';}});
+}
+
+// ─── BASE DATOS ───
+function renderDB(){
+  document.getElementById('bd-body').innerHTML=db.map((p,i)=>{
+    const mBob=calcMtsBobPET(p);
+    const kPE=calcKgPEBob(p);
+    return`<tr>
+      <td class="left"><input value="${p.cli||''}" onchange="db[${i}].cli=this.value" style="width:130px;text-align:left"></td>
+      <td><input type="number" value="${p.af_a||''}" onchange="db[${i}].af_a=+this.value"></td>
+      <td><input type="number" value="${p.af_e||''}" onchange="db[${i}].af_e=+this.value"></td>
+      <td><input type="number" value="${p.af_p||''}" onchange="db[${i}].af_p=+this.value"></td>
+      <td><input type="number" value="${p.pet_a||''}" onchange="db[${i}].pet_a=+this.value;renderDB()"></td>
+      <td><input type="number" value="${p.pet_e||''}" onchange="db[${i}].pet_e=+this.value;renderDB()"></td>
+      <td><input type="number" value="${p.pet_p||''}" onchange="db[${i}].pet_p=+this.value;renderDB()"></td>
+      <td class="calc">${mBob!=null?fmt(mBob,0)+' m':'—'}</td>
+      <td><input type="number" value="${p.pe_a||''}" onchange="db[${i}].pe_a=+this.value;renderDB()"></td>
+      <td><input type="number" value="${p.pe_e||''}" onchange="db[${i}].pe_e=+this.value;renderDB()"></td>
+      <td><input type="number" value="${p.pe_l||''}" onchange="db[${i}].pe_l=+this.value;renderDB()"></td>
+      <td class="calc-pe">${kPE!=null?fmt(kPE,1)+' kg':'—'}</td>
+      <td><button class="btn btn-sm btn-danger" onclick="elimProd(${i})">🗑</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function addProducto(){db.push({id:'p'+Date.now(),cli:'Nuevo',af_a:0,af_e:0,af_p:0,pet_a:0,pet_e:0,pet_p:0,pe_a:0,pe_e:0,pe_l:0});renderDB();}
+function elimProd(i){if(!confirm('¿Eliminar?'))return;db.splice(i,1);renderDB();buildProdSel();}
+
+// ─── UTILS ───
+function showPage(p,btn){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(p==='historial')renderHistorial();
+}
+function openOv(id){document.getElementById(id).classList.add('open');}
+function closeOv(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.overlay').forEach(ov=>ov.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');}));
+
+loadAll();
+</script>
+</body>
+</html>
