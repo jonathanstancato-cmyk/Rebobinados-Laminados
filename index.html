@@ -169,17 +169,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;f
 .rem-header{display:flex;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid #1a1a1a}
 .rem-empresa{font-size:18px;font-weight:700}
 .rem-nro{font-size:20px;font-weight:700;font-family:monospace;color:#555}
-.rem-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
-.rem-field{font-size:12px;padding:6px 10px;border:1px solid #e8e8e6;border-radius:7px}
-.rf-lbl{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:2px}
-.rf-val{font-weight:500}
-.rem-tbl{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:12px}
-.rem-tbl th{padding:6px 8px;text-align:right;font-size:10px;font-weight:700;color:#666;border-bottom:1px solid #e8e8e6;background:#f5f5f3}
+.rem-ticket{width:300px;margin:0 auto;font-size:12px}
+.rem-ticket .rem-header{display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid #1a1a1a}
+.rem-empresa{font-size:16px;font-weight:700}
+.rem-nro{font-size:14px;font-weight:700;font-family:monospace;color:#555;margin-top:2px}
+.rem-field{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed #e0e0e0;font-size:12px}
+.rem-field:last-child{border-bottom:none}
+.rf-lbl{color:#888;font-size:11px}
+.rf-val{font-weight:600;text-align:right;max-width:60%}
+.rem-fields-wrap{margin-bottom:12px}
+.rem-tbl{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:10px}
+.rem-tbl th{padding:5px 6px;text-align:right;font-size:10px;font-weight:700;color:#666;border-bottom:1px solid #e8e8e6;background:#f5f5f3}
 .rem-tbl th:first-child{text-align:left}
-.rem-tbl td{padding:5px 8px;border-bottom:1px solid #f5f5f3;text-align:right;font-size:11px}
+.rem-tbl td{padding:4px 6px;border-bottom:1px solid #f5f5f3;text-align:right;font-size:11px}
 .rem-tbl td:first-child{text-align:left;font-family:monospace;font-weight:600}
+.rem-tbl tr:last-child td{border-bottom:none}
 .rem-tbl tfoot td{font-weight:700;background:#f5f5f3;border-top:1px solid #e8e8e6}
-.rem-totales{background:#f5f5f3;border-radius:8px;padding:10px;display:flex;justify-content:space-around}
+.rem-totales{background:#f5f5f3;border-radius:6px;padding:8px;border-top:2px solid #1a1a1a;margin-top:4px}
+.rem-tot-row{display:flex;justify-content:space-between;padding:3px 0;font-size:13px}
+.rem-tot-row .rl{color:#888;font-size:11px}
+.rem-tot-row .rv{font-weight:700}
 .rt-item{text-align:center}
 .rt-lbl{font-size:10px;color:#888;margin-bottom:3px}
 .rt-val{font-size:16px;font-weight:700}
@@ -272,10 +281,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;f
       <div class="ps-title">Especificaciones del pedido</div>
       <div class="ps-grid" id="o-preview-content"></div>
     </div>
-    <div class="form-row">
-      <div class="mf"><label>Fecha de entrega</label><input type="date" id="o-fecha"></div>
-      <div class="mf"><label>Partida Chivilcoy</label><input id="o-partida" placeholder="ej: 13226S-1VX"></div>
+    <div class="mf"><label>Proceso</label>
+      <select id="o-proceso" onchange="previewOrden()">
+        <option value="Rebobinado">🔁 Rebobinado</option>
+        <option value="Laminado">🔗 Laminado</option>
+        <option value="Refilado">✂️ Refilado</option>
+      </select>
     </div>
+    <div class="mf"><label>Fecha de entrega</label><input type="date" id="o-fecha"></div>
     <div class="mf"><label>Observaciones</label><textarea id="o-obs" rows="2" style="resize:none"></textarea></div>
     <div class="mbtns">
       <div></div>
@@ -347,7 +360,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;f
 
 <!-- MODAL REMITO -->
 <div class="overlay" id="ov-remito">
-  <div class="mcard" style="width:460px">
+  <div class="mcard" style="width:360px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
       <h3 style="margin:0">🧾 Datos para facturar</h3>
       <div style="display:flex;gap:6px">
@@ -529,6 +542,7 @@ function renderOrdenes(){
           <div class="o-sub">
             <span class="o-tag">OC</span><span>${o.oc||'—'}</span>
             <span class="o-tag">OP</span><span>${o.op||'—'}</span>
+            ${o.proceso?`<span class="o-tag">${o.proceso}</span>`:''}
             ${o.fecha?`<span>Entrega: ${fmtDate(o.fecha)}</span>`:''}
             ${o.partida?`<span>Partida: ${o.partida}</span>`:''}
           </div>
@@ -676,8 +690,9 @@ function previewOrden(){
   const kg=+document.getElementById('o-kg').value||0;
   const idx=+document.getElementById('o-prod').value;
   const p=db[idx];
+  const proceso=document.getElementById('o-proceso').value;
   const pv=document.getElementById('o-preview');
-  if(!kg||!p||!p.pet_e||!p.pe_e){pv.style.display='none';return;}
+  if(!kg||!p||!p.pet_e){pv.style.display='none';return;}
   const c=calcPedido(p,kg);
   const mtsBob=calcMtsBobPET(p);
   pv.style.display='block';
@@ -716,7 +731,7 @@ function saveOrden(){
     op:document.getElementById('o-op').value,
     cliente:p.cli,kg,dbId:p.id,
     fecha:document.getElementById('o-fecha').value,
-    partida:document.getElementById('o-partida').value,
+    proceso:document.getElementById('o-proceso').value,
     obs:document.getElementById('o-obs').value,
     estado:'pendiente',calc:c,specs:{...p},
     pallets:[],fechaCreacion:hoyISO()
