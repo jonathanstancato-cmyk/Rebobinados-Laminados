@@ -246,6 +246,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;f
       <thead>
         <tr>
           <th class="left" rowspan="2">Cliente</th>
+          <th rowspan="2" style="background:#f0f0ee;color:#555;text-align:center">Proceso</th>
           <th colspan="3" class="grp-fin">Producto Final</th>
           <th colspan="4" class="grp-pet">Lámina PET — Chivilcoy</th>
           <th colspan="4" class="grp-pe">Lámina PE — Lanús</th>
@@ -274,7 +275,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;f
       <div class="mf"><label>OP interna (auto)</label><input id="o-op" readonly style="background:#f5f5f3;color:#888"></div>
     </div>
     <div class="form-row">
-      <div class="mf"><label>Cliente / Producto</label><select id="o-prod" onchange="previewOrden()"></select></div>
+      <div class="mf"><label>Cliente / Producto</label><select id="o-prod" onchange="buildProdSel()"></select></div>
       <div class="mf"><label>KG solicitados</label><input type="number" id="o-kg" placeholder="ej: 10000" oninput="previewOrden()"></div>
     </div>
     <div class="preview-specs" id="o-preview">
@@ -282,7 +283,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;f
       <div class="ps-grid" id="o-preview-content"></div>
     </div>
     <div class="mf"><label>Proceso</label>
-      <select id="o-proceso" onchange="previewOrden()">
+      <select id="o-proceso" onchange="buildProdSel()">
         <option value="Rebobinado">🔁 Rebobinado</option>
         <option value="Laminado">🔗 Laminado</option>
         <option value="Refilado">✂️ Refilado</option>
@@ -381,25 +382,25 @@ const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','
 let db=[], ordenes=[], stockData={}, openId=null, palletOrdenId=null, palletEditIdx=null, remitoData=null;
 
 const DB_DEFAULT=[
-  {id:'p1',cli:'Pespasa',af_a:300,af_e:93,af_p:null,pet_a:330,pet_e:13,pet_p:null,pe_a:null,pe_e:80,pe_l:null},
-  {id:'p2',cli:'Huertas del Pilar',af_a:200,af_e:450,af_p:25,pet_a:430,pet_e:400,pet_p:100,pe_a:450,pe_e:50,pe_l:1800},
-  {id:'p3',cli:'Dantelli (357-C)',af_a:357,af_e:350,af_p:30,pet_a:380,pet_e:300,pet_p:92,pe_a:400,pe_e:50,pe_l:1800},
-  {id:'p4',cli:'Dantelli (357-N)',af_a:357,af_e:350,af_p:30,pet_a:380,pet_e:300,pet_p:92,pe_a:400,pe_e:50,pe_l:1800},
-  {id:'p5',cli:'Dantelli (323)',af_a:323,af_e:350,af_p:30,pet_a:350,pet_e:300,pet_p:92,pe_a:370,pe_e:50,pe_l:2000},
-  {id:'p6',cli:'Villa D Agri (423)',af_a:423,af_e:280,af_p:83,pet_a:450,pet_e:230,pet_p:83,pe_a:470,pe_e:50,pe_l:1800},
-  {id:'p7',cli:'Villa D Agri (323)',af_a:323,af_e:280,af_p:35,pet_a:350,pet_e:280,pet_p:70,pe_a:370,pe_e:50,pe_l:2000},
-  {id:'p8',cli:'Molinos (421-500)',af_a:421,af_e:500,af_p:25,pet_a:450,pet_e:450,pet_p:150,pe_a:470,pe_e:50,pe_l:1600},
-  {id:'p9',cli:'Molinos (472)',af_a:472,af_e:235,af_p:40,pet_a:500,pet_e:200,pet_p:80,pe_a:530,pe_e:35,pe_l:1800},
-  {id:'p10',cli:'Molinos (421-300)',af_a:421,af_e:300,af_p:40,pet_a:450,pet_e:250,pet_p:120,pe_a:470,pe_e:50,pe_l:null},
-  {id:'p11',cli:'Molinos (421-400)',af_a:421,af_e:400,af_p:30,pet_a:450,pet_e:350,pet_p:120,pe_a:470,pe_e:50,pe_l:1700},
-  {id:'p12',cli:'La italiana (350)',af_a:421,af_e:350,af_p:80,pet_a:450,pet_e:300,pet_p:150,pe_a:470,pe_e:50,pe_l:1380},
-  {id:'p13',cli:'La italiana (500)',af_a:421,af_e:500,af_p:80,pet_a:450,pet_e:450,pet_p:150,pe_a:470,pe_e:50,pe_l:1228},
-  {id:'p14',cli:'Don Yeyo (300)',af_a:321,af_e:300,af_p:35,pet_a:350,pet_e:250,pet_p:92,pe_a:370,pe_e:50,pe_l:1550},
-  {id:'p15',cli:'Mendia (312)',af_a:312,af_e:300,af_p:31,pet_a:350,pet_e:250,pet_p:92,pe_a:370,pe_e:50,pe_l:1600},
-  {id:'p16',cli:'El Artesano (300)',af_a:422,af_e:235,af_p:25,pet_a:450,pet_e:200,pet_p:78,pe_a:470,pe_e:35,pe_l:1950},
-  {id:'p17',cli:'BarielPack (400)',af_a:520,af_e:400,af_p:31,pet_a:550,pet_e:350,pet_p:92,pe_a:570,pe_e:50,pe_l:1500},
-  {id:'p18',cli:'BarielPack (600)',af_a:520,af_e:600,af_p:45,pet_a:550,pet_e:550,pet_p:92,pe_a:570,pe_e:50,pe_l:946},
-  {id:'p19',cli:'BarielPack (350)',af_a:520,af_e:350,af_p:31,pet_a:550,pet_e:300,pet_p:92,pe_a:570,pe_e:50,pe_l:1700},
+  {id:'p1',tipo:'Laminado',cli:'Pespasa',af_a:300,af_e:93,af_p:null,pet_a:330,pet_e:13,pet_p:null,pe_a:null,pe_e:80,pe_l:null},
+  {id:'p2',tipo:'Laminado',cli:'Huertas del Pilar',af_a:200,af_e:450,af_p:25,pet_a:430,pet_e:400,pet_p:100,pe_a:450,pe_e:50,pe_l:1800},
+  {id:'p3',tipo:'Laminado',cli:'Dantelli (357-C)',af_a:357,af_e:350,af_p:30,pet_a:380,pet_e:300,pet_p:92,pe_a:400,pe_e:50,pe_l:1800},
+  {id:'p4',tipo:'Laminado',cli:'Dantelli (357-N)',af_a:357,af_e:350,af_p:30,pet_a:380,pet_e:300,pet_p:92,pe_a:400,pe_e:50,pe_l:1800},
+  {id:'p5',tipo:'Laminado',cli:'Dantelli (323)',af_a:323,af_e:350,af_p:30,pet_a:350,pet_e:300,pet_p:92,pe_a:370,pe_e:50,pe_l:2000},
+  {id:'p6',tipo:'Laminado',cli:'Villa D Agri (423)',af_a:423,af_e:280,af_p:83,pet_a:450,pet_e:230,pet_p:83,pe_a:470,pe_e:50,pe_l:1800},
+  {id:'p7',tipo:'Laminado',cli:'Villa D Agri (323)',af_a:323,af_e:280,af_p:35,pet_a:350,pet_e:280,pet_p:70,pe_a:370,pe_e:50,pe_l:2000},
+  {id:'p8',tipo:'Laminado',cli:'Molinos (421-500)',af_a:421,af_e:500,af_p:25,pet_a:450,pet_e:450,pet_p:150,pe_a:470,pe_e:50,pe_l:1600},
+  {id:'p9',tipo:'Laminado',cli:'Molinos (472)',af_a:472,af_e:235,af_p:40,pet_a:500,pet_e:200,pet_p:80,pe_a:530,pe_e:35,pe_l:1800},
+  {id:'p10',tipo:'Laminado',cli:'Molinos (421-300)',af_a:421,af_e:300,af_p:40,pet_a:450,pet_e:250,pet_p:120,pe_a:470,pe_e:50,pe_l:null},
+  {id:'p11',tipo:'Laminado',cli:'Molinos (421-400)',af_a:421,af_e:400,af_p:30,pet_a:450,pet_e:350,pet_p:120,pe_a:470,pe_e:50,pe_l:1700},
+  {id:'p12',tipo:'Laminado',cli:'La italiana (350)',af_a:421,af_e:350,af_p:80,pet_a:450,pet_e:300,pet_p:150,pe_a:470,pe_e:50,pe_l:1380},
+  {id:'p13',tipo:'Laminado',cli:'La italiana (500)',af_a:421,af_e:500,af_p:80,pet_a:450,pet_e:450,pet_p:150,pe_a:470,pe_e:50,pe_l:1228},
+  {id:'p14',tipo:'Laminado',cli:'Don Yeyo (300)',af_a:321,af_e:300,af_p:35,pet_a:350,pet_e:250,pet_p:92,pe_a:370,pe_e:50,pe_l:1550},
+  {id:'p15',tipo:'Laminado',cli:'Mendia (312)',af_a:312,af_e:300,af_p:31,pet_a:350,pet_e:250,pet_p:92,pe_a:370,pe_e:50,pe_l:1600},
+  {id:'p16',tipo:'Laminado',cli:'El Artesano (300)',af_a:422,af_e:235,af_p:25,pet_a:450,pet_e:200,pet_p:78,pe_a:470,pe_e:35,pe_l:1950},
+  {id:'p17',tipo:'Laminado',cli:'BarielPack (400)',af_a:520,af_e:400,af_p:31,pet_a:550,pet_e:350,pet_p:92,pe_a:570,pe_e:50,pe_l:1500},
+  {id:'p18',tipo:'Laminado',cli:'BarielPack (600)',af_a:520,af_e:600,af_p:45,pet_a:550,pet_e:550,pet_p:92,pe_a:570,pe_e:50,pe_l:946},
+  {id:'p19',tipo:'Laminado',cli:'BarielPack (350)',af_a:520,af_e:350,af_p:31,pet_a:550,pet_e:300,pet_p:92,pe_a:570,pe_e:50,pe_l:1700},
 ];
 
 // ─── HELPERS ───
@@ -729,7 +730,7 @@ function saveOrden(){
     id:'o'+Date.now(),
     oc:document.getElementById('o-oc').value,
     op:document.getElementById('o-op').value,
-    cliente:p.cli,kg,dbId:p.id,
+    cliente:p.cli,kg,dbId:p.id,tipoProd:p.tipo||'Laminado',
     fecha:document.getElementById('o-fecha').value,
     proceso:document.getElementById('o-proceso').value,
     obs:document.getElementById('o-obs').value,
